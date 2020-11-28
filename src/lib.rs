@@ -15,3 +15,4 @@ pub use liblz4::version;
 pub use liblz4::BlockMode;
 pub use liblz4::BlockSize;
 pub use liblz4::ContentChecksum;
+pub use decoder::decompress_partial;
