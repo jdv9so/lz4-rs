@@ -18,6 +18,12 @@ pub struct Decoder<R> {
     next: usize,
 }
 
+pub fn decompress_partial(src: &[u8], dst: &mut [u8], compressed_size: i32, target_size: i32, capacity: i32) -> i32{
+    unsafe {
+        LZ4_decompress_safe_partial(src.as_ptr(), dst.as_mut_ptr(), compressed_size, target_size, capacity)
+    }
+}
+
 impl<R: Read> Decoder<R> {
     /// Creates a new encoder which will have its output written to the given
     /// output stream. The output stream can be re-acquired by calling

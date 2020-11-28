@@ -357,6 +357,8 @@ extern "C" {
     // int LZ4_freeStreamDecode(LZ4_streamDecode_t* LZ4_stream)
     pub fn LZ4_freeStreamDecode(LZ4_stream: *mut LZ4StreamDecode) -> c_int;
 
+    pub fn LZ4_decompress_safe_partial(source: *const u8, dest: *mut u8, compressed_size: c_int, target_output_size: c_int, dst_capacity: c_int) -> c_int;
+
 }
 
 #[test]
