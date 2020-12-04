@@ -21,6 +21,7 @@
 use super::liblz4::*;
 use libc::c_char;
 use std::io::{Error, ErrorKind, Result};
+use std::os::raw::c_int;
 
 /// Represents the compression mode do be used.
 pub enum CompressionMode {
@@ -30,6 +31,32 @@ pub enum CompressionMode {
     FAST(i32),
     /// Default compression
     DEFAULT,
+}
+
+pub unsafe fn compress_bound(len: usize) -> i32 {
+    LZ4_compressBound(len as i32)
+}
+
+/// this function requires you to have a buffer with both the dict and the destination at one place
+/// not so well documented functionality but this increases the decompression speed
+/// significantly
+pub unsafe fn decompress_with_dict(src: &[u8], dest_with_dict: &mut [u8], dict_len: usize) -> i32 {
+
+    let dest = dest_with_dict[dict_len..].as_mut_ptr() as *mut c_char;
+    let dest_len = dest_with_dict.len() - dict_len;
+    let dict = &dest_with_dict[0..dict_len];
+
+    LZ4_decompress_safe_usingDict (src.as_ptr() as *const c_char, dest, src.len() as c_int, dest_len as c_int, dict.as_ptr() as *const u8, dict_len as i32)
+}
+
+pub unsafe fn compress_with_dict(src: &[u8], compression: u8, dict: &[u8], dest: &mut [u8]) -> i32 {
+    let compress_bound: i32 = LZ4_compressBound(src.len() as i32);
+    let st  = LZ4_createStreamHC();
+    LZ4_setCompressionLevel(st, compression as i32);
+    LZ4_loadDictHC(st, dict.as_ptr() as *const u8, dict.len() as i32);
+    let res = LZ4_compress_HC_continue (st, src.as_ptr() as *const c_char, dest.as_mut_ptr() as *mut c_char, src.len() as i32, compress_bound as i32);
+    LZ4_freeStreamHC(st);
+    res
 }
 
 /// Compresses the full src buffer using the specified CompressionMode, where None and Some(Default)

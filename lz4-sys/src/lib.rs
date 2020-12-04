@@ -1,7 +1,5 @@
-#![no_std]
 extern crate libc;
-
-use libc::{c_void, c_char, c_uint, size_t, c_int};
+use libc::{c_void, c_char, c_uint, size_t, c_int, c_ushort, c_short, c_schar, c_uchar};
 
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -87,6 +85,43 @@ pub struct LZ4StreamEncode(c_void);
 
 #[repr(C)]
 pub struct LZ4StreamDecode(c_void);
+
+const LZ4HC_DICTIONARY_LOGSIZE: u32 =  16;
+const LZ4HC_MAXD: u32 =  1 << LZ4HC_DICTIONARY_LOGSIZE;
+
+const LZ4HC_HASH_LOG: u32 = 15;
+const LZ4HC_HASHTABLESIZE: u32  = 1 << LZ4HC_HASH_LOG;
+
+#[repr(C)]
+#[allow(non_snake_case)]
+#[derive(Copy, Clone)]
+pub struct Lz4hcCctxInternal
+{
+    pub hashTable: [c_uint; LZ4HC_HASHTABLESIZE as usize],
+    pub chainTable: [c_ushort; LZ4HC_MAXD as usize],
+    pub end: *const c_uchar,
+    pub base: *const c_uchar,
+    pub dictBase:  *const c_uchar,
+    pub dictLimit: c_uint,
+    pub lowLimit: c_uint,
+    pub nextToUpdate: c_uint,
+    pub compressionLevel: c_short,
+    pub favorDecSpeed: c_schar,
+    pub dirty: c_schar,
+    pub dictCtx: *const Lz4hcCctxInternal,
+}
+const LZ4_STREAMHCSIZE:u32 = 262200;
+const LZ4_STREAMHCSIZE_VOIDP: u32 =  LZ4_STREAMHCSIZE / std::mem::size_of::<*const c_void>() as u32;
+
+#[repr(C)]
+#[allow(non_snake_case)]
+pub union Lz4StreamHcU {
+    pub table: *const [c_uint; LZ4_STREAMHCSIZE_VOIDP as usize],
+    pub internal_donotuse: Lz4hcCctxInternal
+}
+
+type Lz4StreamHcT = Lz4StreamHcU;
+
 
 pub const LZ4F_VERSION: c_uint = 100;
 
@@ -358,6 +393,16 @@ extern "C" {
     pub fn LZ4_freeStreamDecode(LZ4_stream: *mut LZ4StreamDecode) -> c_int;
 
     pub fn LZ4_decompress_safe_partial(source: *const u8, dest: *mut u8, compressed_size: c_int, target_output_size: c_int, dst_capacity: c_int) -> c_int;
+
+    pub fn LZ4_resetStreamHC(lz4_state: *mut Lz4StreamHcT, compression: c_int);
+    pub fn LZ4_loadDictHC(lz4_state: *mut Lz4StreamHcT, dict: *const u8, dict_size: c_int);
+    pub fn LZ4_compress_HC_continue (lz4_state: *mut Lz4StreamHcT, source: *const c_char, dest: *mut c_char, source_size: c_int, dest_size:c_int) -> c_int;
+    pub fn LZ4_decompress_safe_usingDict(source: *const c_char, dest: *mut c_char, compressed_size: c_int, max_output_size: c_int , dict_start: *const u8, dict_size: c_int) -> c_int;
+    pub fn LZ4_createStreamHC() -> &'static mut Lz4StreamHcT;
+    pub fn LZ4_freeStreamHC(lz4_state: *mut Lz4StreamHcT);
+    pub fn LZ4_setCompressionLevel(lz4_state: *mut Lz4StreamHcT, compression_level: c_int);
+
+
 
 }
 

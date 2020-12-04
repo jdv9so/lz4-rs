@@ -91,8 +91,7 @@ impl EncoderBuilder {
         Ok(encoder)
     }
 }
-
-impl<W: Write> Encoder<W> {
+    impl<W: Write> Encoder<W> {
     fn write_header(&mut self, preferences: &LZ4FPreferences) -> Result<()> {
         unsafe {
             let len = try!(check_error(LZ4F_compressBegin(
