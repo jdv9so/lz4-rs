@@ -59,6 +59,25 @@ pub unsafe fn compress_with_dict(src: &[u8], compression: u8, dict: &[u8], dest:
     res
 }
 
+pub unsafe fn compress_hc_no_alloc(src: &[u8], dest: &mut [u8], compression: u8) -> i32 {
+    LZ4_compress_HC(
+        src.as_ptr() as *const c_char,
+        dest.as_mut_ptr() as *mut c_char,
+        src.len() as i32,
+        dest.len() as c_int,
+        compression as i32,
+    )
+}
+
+pub unsafe fn decompress_no_alloc(src: &[u8], dest: &mut [u8], decompressed_size: usize) -> i32 {
+    LZ4_decompress_safe(
+        src.as_ptr() as *const c_char,
+        dest.as_mut_ptr() as *mut c_char,
+        src.len() as i32,
+        decompressed_size as i32
+    )
+}
+
 /// Compresses the full src buffer using the specified CompressionMode, where None and Some(Default)
 /// are treated equally. If prepend_size is set, the source length will be prepended to the output
 /// buffer.
