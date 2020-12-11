@@ -59,6 +59,14 @@ pub unsafe fn compress_with_dict(src: &[u8], compression: u8, dict: &[u8], dest:
     res
 }
 
+pub unsafe fn compress_with_dict_low(src: &[u8], dict: &[u8], dest: &mut [u8]) -> i32 {
+    let st = LZ4_createStream();
+    LZ4_loadDict(st, dict.as_ptr() as *const u8, dict.len() as i32);
+    let res = LZ4_compress_continue(st, src.as_ptr() as *const u8, dest.as_mut_ptr() as *mut u8, src.len() as i32);
+    LZ4_freeStream(st);
+    res
+}
+
 pub unsafe fn compress_hc_no_alloc(src: &[u8], dest: &mut [u8], compression: u8) -> i32 {
     LZ4_compress_HC(
         src.as_ptr() as *const c_char,

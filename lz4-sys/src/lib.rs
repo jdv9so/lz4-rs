@@ -396,6 +396,7 @@ extern "C" {
 
     pub fn LZ4_resetStreamHC(lz4_state: *mut Lz4StreamHcT, compression: c_int);
     pub fn LZ4_loadDictHC(lz4_state: *mut Lz4StreamHcT, dict: *const u8, dict_size: c_int);
+    pub fn LZ4_loadDict(lz4_state: *mut LZ4StreamEncode, dict: *const u8, dict_size: c_int);
     pub fn LZ4_compress_HC_continue (lz4_state: *mut Lz4StreamHcT, source: *const c_char, dest: *mut c_char, source_size: c_int, dest_size:c_int) -> c_int;
     pub fn LZ4_decompress_safe_usingDict(source: *const c_char, dest: *mut c_char, compressed_size: c_int, max_output_size: c_int , dict_start: *const u8, dict_size: c_int) -> c_int;
     pub fn LZ4_createStreamHC() -> &'static mut Lz4StreamHcT;
