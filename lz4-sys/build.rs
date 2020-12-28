@@ -22,6 +22,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         .file("liblz4/lib/lz4hc.c")
         .file("liblz4/lib/xxhash.c")
         .define("LZ4_HEAPMODE", "0")
+        .define("LZ4HC_HEAPMODE", "0")
         // We always compile the C with optimization, because otherwise it is 20x slower.
         .opt_level(3);
     match env::var("TARGET")
